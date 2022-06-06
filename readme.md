@@ -1,52 +1,52 @@
-Binary Serialization/DeSerialization Library from Scratch! (with custom bytecode format)
+Binary Serialization/DeSerialization Library from Scratch! 
 
-IN PROGRESS
+_**(with custom bytecode format_ **ACODE**_)**_
 
 I created a custom byte format called A-code. 
 
-The Read/write pair rules for it are defined as follows
 
-Elemental Data
+**Notes**:
 
-1. Int
-2. Float
-3. String
-4. Char
-5. EmptySpace
+1. This goal of this library is to serialize and deserialize python dictionaries
+2. This library only deals with self-contained dictionaries which do not point to other items in the memory
+3. Thus A-Code consists of only rules for basic data types currently
 
-Data Structures
+The Read/write pair rules are defined as follows
 
-1. Lists
-2. Dictionary
-
-Goal 1: Reconstruct Dicts
-
-A-Code Table:
-
-ASCII	            Code
+UTF-8	            Code
 
 A-Code	            \AA
-{	                \0Ds
-}	                \0De
-Empty space	        \0a
-' / char	        \0c
-“ / string	        \0s
-: (end of key)	    \0eok
-, (end of item)	    \0eoi
-eof	                \00
-Normal characters	Ascii format
+pre-processor
+
+int                 \Ai
+float               \Af
+char	            \Ac
+string	            \As
+dict                \Ad
+eof	                \A00
+Normal characters	[datatype][Ascii]
+
+
+Serialization Algorithm:
+
+Output format after serializing
+
+[k,v," ",k,[k,v,"",k,v,""], k,[v1,v2,v3,v4]]
 
 Steps:
 
-Serialisation (Converting into Code)
+Serialization (Converting into Code)
 
-1. The first character should mark the custom protocol for our identification
-2. Know if the character is an empty space. If yes. Disregard it. 
-3. Know if the character starts an object. Now it needs to be enclosed. If not throw an InvalidInputFormat Error
-    1. If the character is ‘  It starts a Char. 
-    2. If it is “ it starts a string. 
-    3.  If it is { it starts a dict. 
-    4. It it is [ it starts a list.
-4. We also need to identify separate each code frame while deserialising. So we will use empty space character between each token while serialisation
+1. The first characters should mark the custom protocol for our identification
+2. The final characters should contain eof code
+3. Dump each item in the dictionary as single item in code with format of keys and values as [type][data]
+4. Each item of dictionary should be seperated with space in A-Code
 
-For large Files, We need to Divide them into batches of small sizes and serialise them. 
+DeSerialisation (Creating Dictionary from Code) 
+
+1. While reading the Code, split the code into seperate items 
+2. Split each item into key and value. 
+3. identify key (value and datatype)
+4. identify value (value and datatype)
+5. Create a new Resultant Dictionary Object and dump those keys and values in the new dictionary.
+6. The Error Handling for Invalid Code format is present in the function itself.

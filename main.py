@@ -1,85 +1,115 @@
 import typing
-import pickle
-import pickletools
-import datetime
-import struct
 
-Acode = typing.NewType('Acode',str)
+Acode = typing.NewType('Acode', str)
 
-def to_code(c:chr)->str:
-    if c == '{':
-        return "\ADs"
-    elif c== '}':
-        return "\ADe"
-    elif c==' ':
-        return "\Aa"
-    elif c=="\'":
-        return "\Ac"
-    elif c==':':
-        return "\Aeok"
-    elif c==",":
-        return "\Aeoi"
-    else:
-        return str(c)
+data_type = {
+    "int": "\Ai",
+    "float": "\Af",
+    "chr": "\Ac",
+    "str": "\As",
+}
 
-def code_split(string)->typing.List:
-    lst:typing.List[typing.AnyStr] = []
-    s = 0
-    for i in range(len(string)):
-        if string[i]=="\\" and string[i+1]=="A" and string[i+2]=="a":
-            lst.append(string[s:i])
-            s=i+3
-    lst.append(string[i:])
-    return lst
 
-def valid_code(string:str) -> bool:
-    code_array = code_split(string)
-    if code_array[0][:3]!="\AA":
-        raise "Wrong Protocol"
-    
+def serialize_dict(input_dict: typing.Dict) -> Acode:
+    # serialization protocol of dict object
+    result: typing.List[typing.AnyStr] = ["\AA", " "]
+    for key, value in input_dict.items():
+        if type(key).__name__ in data_type:
+            result.append(str(data_type[type(key).__name__]) + str(key))
+            result.append(str(data_type[type(value).__name__]) + str(value))
+            result.append(" ")
+    result.append("\A00")
+    return Acode("".join(x for x in result))
 
-def serialize_dict(input_dict:typing.Dict)->Acode:
-    # serialization protocol
-    input_string = str(input_dict)
-    print(input_string)
-    result = "\AA"
-    for c in input_string:
-        result += to_code(c)
-        print(to_code(c))
-    result+="\00"
-    # if not valid_code(result):
-    #     raise "Wrong Input Dictionary Format"
-    return result
 
-def desearlize_binary(binary_data:Acode) -> typing.Dict:
-    # deserialization protocol
+def desearlize_binary(acode: Acode) -> typing.Dict:
+    # deserialization
+    code_array = acode.split(' ')
+    if code_array[0] != "\AA" or code_array[-1] != "\A00":
+        print("Wrong Protocol")
+        raise
+    code_array.remove("\AA")
+    code_array.pop()
+    result_dict = {}
+    for code in code_array:
+        pair = code.split('\\')
+        if len(pair) != 3:
+            print("Key or Value missing in one dict item")
+            raise
+        if pair[1][:2] == "As":
+            key_type = "string"
+            string_key = pair[1][2:]
+        elif pair[1][:2] == "Ac":
+            key_type = "char"
+            char_key = chr(pair[1][2])
+        elif pair[1][:2] == "Ai":
+            key_type = "int"
+            int_key = int(pair[1][2:])
+        elif pair[1][:2] == "Af":
+            key_type = "float"
+            float_key = float(pair[1][2:])
+        else:
+            print("Wrong Format")
+            raise
+        if pair[2][:2] == "As":
+            value_type = "string"
+            string_value = pair[2][2:]
+        elif pair[2][:2] == "Ac":
+            value_type = "char"
+            char_value = chr(pair[2][2])
+        elif pair[2][:2] == "Ai":
+            value_type = "int"
+            int_value = int(pair[2][2:])
+        elif pair[2][:2] == "Af":
+            value_type = "float"
+            float_value = float(pair[2][2:])
+        else:
+            print("Wrong Format")
+            raise
+        if key_type == "char":
+            key = char_key
+        if key_type == "int":
+            key = int_key
+        if key_type == "string":
+            key = string_key
+        if key_type == "float":
+            key = float_key
+        if value_type == "char":
+            value = char_value
+        if value_type == "int":
+            value = int_value
+        if value_type == "string":
+            value = string_value
+        if value_type == "float":
+            value = float_value
+        result_dict[key] = value
+    return result_dict
 
-def serialize(input_dict:typing.Dict):
-    with open("bin_store.bin","wb") as f:
+
+def serialize(input_dict: typing.Dict):
+    with open("bin_store.txt", "w") as f:
         data = serialize_dict(input_dict=input_dict)
         f.write(data)
-        return
-               
+
 
 def deserialize() -> typing.Dict:
-    with open("bin_store.bin","rb") as f:
+    with open("bin_store.txt", "r") as f:
         binary_input = f.read()
-        result_dict = desearlize_binary(binary_data=binary_input)
+        result_dict = desearlize_binary(acode=Acode(binary_input))
         return result_dict
 
-if __name__=="__main__":
+
+# Testing function
+if __name__ == "__main__":
     sample_dict = {
-        'x' : 1,
-        'y' : 2,
-        'z' : 3
+        'x': "Aditya",
+        'y': 2,
+        'z': 3
     }
-    # with open("bin_store.bin",'wb') as f:
-    #     pickle.dump(sample_dict,f)
-    # # with open("bin_store.bin","rb") as f:
-    # #     data = f.read()
-    # #     print(data.decode())
-    # data = b'\x01x\x01\x01y\x02\x01z\x03'
-    # print(data.decode())
-    acode = serialize_dict(sample_dict)
-    print(acode)
-    print(valid_code(acode))
+    new_dict = {}
+    for i in range(100000):
+        new_dict[i] = i
+    new_dict[100000] = 10.2
+    serialize(input_dict=new_dict)
+    deserialized_dict = deserialize()
+    print(deserialized_dict)
