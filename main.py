@@ -7,6 +7,7 @@ data_type = {
     "float": "\Af",
     "chr": "\Ac",
     "str": "\As",
+    "dict": "\Ad",
 }
 
 
@@ -33,7 +34,7 @@ def desearlize_binary(acode: Acode) -> typing.Dict:
     result_dict = {}
     for code in code_array:
         pair = code.split('\\')
-        if len(pair) != 3:
+        if len(pair) < 3:
             print("Key or Value missing in one dict item")
             raise
         if pair[1][:2] == "As":
@@ -63,6 +64,9 @@ def desearlize_binary(acode: Acode) -> typing.Dict:
         elif pair[2][:2] == "Af":
             value_type = "float"
             float_value = float(pair[2][2:])
+        elif pair[2][:2] == "Ad":
+            value_type = "dict"
+            dict_value = dict(pair[2][2:])
         else:
             print("Wrong Format")
             raise
@@ -80,6 +84,8 @@ def desearlize_binary(acode: Acode) -> typing.Dict:
             value = int_value
         if value_type == "string":
             value = string_value
+        if value_type == "dict":
+            value = dict_value
         if value_type == "float":
             value = float_value
         result_dict[key] = value
@@ -103,13 +109,15 @@ def deserialize() -> typing.Dict:
 if __name__ == "__main__":
     sample_dict = {
         'x': "Aditya",
-        'y': 2,
+        'y': {
+                'a': 1,
+              },
         'z': 3
     }
-    new_dict = {}
-    for i in range(100000):
-        new_dict[i] = i
-    new_dict[100000] = 10.2
-    serialize(input_dict=new_dict)
+    # new_dict = {}
+    # for i in range(100000):
+    #     new_dict[i] = i
+    # new_dict[100000] = 10.2
+    # serialize(input_dict=sample_dict)
     deserialized_dict = deserialize()
     print(deserialized_dict)

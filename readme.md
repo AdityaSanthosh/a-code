@@ -30,6 +30,8 @@ Output format after serializing
 
 [k,v," ",k,[k,v,"",k,v,""], k,[v1,v2,v3,v4]]
 
+\AA \Asx\AsAditya \Asy\Ad\Asa\Ai1 \Asz\Ai3 \A00
+
 Steps:
 
 Serialization (Converting into Code)
