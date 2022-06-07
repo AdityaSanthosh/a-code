@@ -1,6 +1,6 @@
 Binary Serialization/DeSerialization Library from Scratch! 
 
-_**(with custom bytecode format_ **ACODE**_)**_
+(with custom bytecode format **ACODE**)
 
 I created a custom byte format called A-code. 
 
@@ -13,18 +13,15 @@ I created a custom byte format called A-code.
 
 The Read/write pair rules are defined as follows
 
-UTF-8	            Code
-
-A-Code	            \AA
-pre-processor
-
-int                 \Ai
-float               \Af
-char	            \Ac
-string	            \As
-dict                \Ad
-eof	                \A00
-Normal characters	[datatype][Ascii]
+UTF-8	      |      Code
+----------- |    -----------   
+Preprocessor(A-Code) 	    |        \AA
+int           |      \Ai
+float         |      \Af
+char	        |      \Ac
+string	      |      \As
+eof	          |      \A00
+Normal characters	 |  [datatype][Ascii]
 
 
 Serialization Algorithm:
