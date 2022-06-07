@@ -109,15 +109,13 @@ def deserialize() -> typing.Dict:
 if __name__ == "__main__":
     sample_dict = {
         'x': "Aditya",
-        'y': {
-                'a': 1,
-              },
+        'y': 'a',
         'z': 3
     }
     # new_dict = {}
     # for i in range(100000):
     #     new_dict[i] = i
     # new_dict[100000] = 10.2
-    # serialize(input_dict=sample_dict)
+    serialize(input_dict=sample_dict)
     deserialized_dict = deserialize()
     print(deserialized_dict)
